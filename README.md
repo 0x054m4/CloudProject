@@ -4,6 +4,9 @@ Live app: **https://d21kijacbodwl6.cloudfront.net** · [Deployment details](docs
 
 A complete native HTML/CSS/JavaScript frontend and Node.js + Express backend, with AWS SAM infrastructure for S3, CloudFront, Cognito, API Gateway REST API, Lambda and DynamoDB. No React or frontend build framework is required. “Frontend: native” is interpreted as native browser technologies rather than a native mobile app.
 
+
+For a service-by-service explanation with code references, resource names and request flows, see [Where each AWS service is used](docs/AWS-SERVICES.md).
+
 ## Run locally
 
 Requires Node.js 22 and npm.
