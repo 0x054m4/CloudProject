@@ -1,0 +1,15 @@
+{
+  "name": "margin-reading-list",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "backend"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w backend",
+    "start": "npm start -w backend",
+    "test": "npm test -w backend",
+    "build": "node scripts/build.mjs",
+    "check:secrets": "node scripts/check-secrets.mjs"
+  }
+}
