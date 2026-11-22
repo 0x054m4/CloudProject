@@ -56,3 +56,7 @@ Follow [AWS setup](docs/SETUP.md) to create the actual cloud resources and uploa
 The backend has Library, Journal and Insights business-service modules sharing one identity and application. Open Library search fills book details before review/save. Highlights require a book that has been started; planning notes are allowed before reading. Starting/finishing a book consumes its next-up pin.
 
 Read [requirements and evidence](docs/REQUIREMENTS.md), [application threat model](docs/THREAT-MODEL.md) and [genuine team contributions](docs/CONTRIBUTIONS.md). Run `npm run check:secrets` before committing, alongside `npm test`.
+
+## Custom account emails
+
+Optional branded Amazon SES sending is prepared but not enabled. See [SES setup and current status](docs/SES-EMAIL.md).
