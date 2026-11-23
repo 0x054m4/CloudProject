@@ -27,6 +27,8 @@ export function createApp({store=createStore(),local=process.env.LOCAL_DEV==='tr
  app.delete('/api/books/:id',async(req,res)=>{await library.remove(req.pk,req.params.id);res.sendStatus(204);});
  app.get('/api/books/:id/entries',async(req,res)=>res.json(await journal.list(req.pk,req.params.id)));
  app.post('/api/books/:id/entries',async(req,res)=>res.status(201).json(await journal.add(req.pk,req.params.id,req.body)));
+ app.get('/api/books/:id/progress',async(req,res)=>res.json(await journal.getProgress(req.pk,req.params.id)));
+ app.put('/api/books/:id/progress',async(req,res)=>res.json(await journal.updateProgress(req.pk,req.params.id,req.body)));
  app.delete('/api/books/:id/entries/:entryId',async(req,res)=>{await journal.remove(req.pk,req.params.id,req.params.entryId);res.sendStatus(204);});
  app.get('/api/stats',async(req,res)=>res.json(await insights.stats(req.pk)));
  app.post('/api/share',async(req,res)=>res.json(await insights.enableSharing(req.pk)));
