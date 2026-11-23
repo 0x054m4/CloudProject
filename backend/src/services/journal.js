@@ -41,8 +41,13 @@ export function createJournalService(store, library) {
     },
 
     async getProgress(owner, bookId) {
-      await library.requireBook(owner, bookId);
+      const book = await library.requireBook(owner, bookId);
       const progress = await store.get(journalKey(owner, bookId), PROGRESS);
+      // A finished book is always 100% read, even if it was marked finished by editing the book.
+      if (book.status === 'finished') {
+        const pageCount = progress?.pageCount ?? null;
+        return { pageCount, currentPage: pageCount ?? 0, percentage: 100, updatedAt: progress?.updatedAt ?? null };
+      }
       if (!progress) return { pageCount: null, currentPage: 0, percentage: 0, updatedAt: null };
       const { pk, sk, ...result } = progress;
       return result;
@@ -55,6 +60,10 @@ export function createJournalService(store, library) {
       // Rule 1: progress is only tracked for books the reader has started.
       if (book.status === 'to-read') {
         throw fail(409, 'Set the book to Reading before recording progress');
+      }
+      // Rule 1b: a finished book keeps 100%; it must be re-opened (status Reading) to change progress.
+      if (book.status === 'finished') {
+        throw fail(409, 'This book is finished. Set it back to Reading to change its progress');
       }
 
       // Rule 2: the server calculates the percentage; the client cannot send it.

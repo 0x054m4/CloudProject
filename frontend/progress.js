@@ -16,6 +16,15 @@ async function renderProgress(bookId, book) {
   const progress = await api(`/api/books/${bookId}/progress`);
   const percentage = progress.percentage || 0;
 
+  // A finished book is shown as complete; progress changes only after setting it back to Reading.
+  if (book.status === 'finished') {
+    panel.innerHTML = `<h2>Reading progress</h2>
+      <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><i style="width:100%"></i></div>
+      <p class="progress-label"><strong>100%</strong> · finished${progress.pageCount ? ` · ${escape(progress.pageCount)} pages` : ''}</p>
+      <p class="hint">To change progress, edit the book and set its status back to Reading.</p>`;
+    return;
+  }
+
   panel.innerHTML = `<h2>Reading progress</h2>
     <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percentage}">
       <i style="width:${percentage}%"></i>
