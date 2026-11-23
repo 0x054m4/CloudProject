@@ -27,7 +27,29 @@ async function renderProgress(bookId, book) {
       <label>Total pages<input type="number" name="pageCount" min="1" max="100000" required value="${escape(progress.pageCount ?? '')}"></label>
       <button>Update progress</button>
     </form>
+    <button type="button" id="lookup-pages" class="text-button">Get page count from Open Library</button>
     <p id="progress-error" role="alert"></p>`;
+
+  // External API: ask the backend to search Open Library for this book's page count.
+  $('#lookup-pages').onclick = async () => {
+    const button = $('#lookup-pages');
+    button.disabled = true;
+    $('#progress-error').textContent = '';
+    try {
+      const results = await api('/api/catalog?q=' + encodeURIComponent(`${book.title} ${book.author}`.slice(0, 120)));
+      const match = results.find(result => result.pages);
+      if (match) {
+        $('#progress-form').elements.pageCount.value = match.pages;
+        toast(`Open Library: ${match.pages} pages. Check it, then click Update progress.`);
+      } else {
+        $('#progress-error').textContent = 'Open Library has no page count for this book. Please enter it manually.';
+      }
+    } catch (error) {
+      $('#progress-error').textContent = error.message;
+    } finally {
+      button.disabled = false;
+    }
+  };
 
   $('#progress-form').onsubmit = async event => {
     event.preventDefault();
