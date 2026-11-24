@@ -57,6 +57,17 @@ test('reading progress rules, percentage, auto-finish and page-checked highlight
     assert.equal(finishedBook.status, 'finished');
     assert.match(finishedBook.finishedAt, /^\d{4}-\d{2}-\d{2}$/);
 
+    // Rule 1b: a finished book cannot move its progress back (409)
+    assert.equal((await request(`/books/${id}/progress`, 'PUT', { pageCount: 400, currentPage: 5 })).status, 409);
+
+    // A book marked finished by editing (not by progress) still shows 100%
+    const edited = (await request('/books', 'POST', { ...book, status: 'reading' })).body.id;
+    await request(`/books/${edited}/progress`, 'PUT', { pageCount: 100, currentPage: 5 });
+    await request(`/books/${edited}`, 'PUT', { ...book, status: 'finished', finishedAt: '2026-11-23' });
+    const shown = (await request(`/books/${edited}/progress`)).body;
+    assert.equal(shown.percentage, 100);
+    assert.equal(shown.currentPage, 100);
+
     // Ownership: another user's book is not found (404)
     await store.put({ ...book, id: 'other', pk: 'USER#someone-else', sk: 'BOOK#other' });
     assert.equal((await request('/books/other/progress')).status, 404);
