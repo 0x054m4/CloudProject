@@ -28,6 +28,7 @@ npm test
 - Notes and highlights with optional page numbers and deletion.
 - Optional 1–5 ratings, completion dates, monthly finished-book counts and average ratings by genre.
 - Pin/unpin a next-up shortlist; finished/reading books are excluded from it.
+- Administrator view with paginated reader accounts and enable/disable controls, protected by the Cognito `administrators` group.
 - Cognito email registration, verification, login, session refresh and password reset in AWS mode.
 - Private S3 cover uploads with expiring upload/download URLs.
 - Optional public shortlist: opt in to a random link, then revoke it. Notes, highlights, ratings, covers and user identity are never included in the public response.

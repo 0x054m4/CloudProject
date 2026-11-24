@@ -43,3 +43,11 @@ bash scripts/deploy-frontend.sh margin us-east-1
 See SETUP.md for installing the Python SDK and running `scripts/smoke-aws.py`. The deployment was performed using the root-backed profile supplied for the task; use a dedicated deployment role for routine future changes. No credentials are stored in this document or the project.
 
 Deleting the CloudFormation stack retains the user pool, DynamoDB table and S3 buckets intentionally. Consult SETUP.md before cleanup so retained resources and charges are accounted for.
+
+## Administrator update — 24 November 2026
+
+Deployed the Administration view, `/api/me`, account listing and enable/disable endpoints to the existing stack and CloudFront distribution. Deployment creates the `administrators` Cognito group and restricts Lambda account-management permissions to this user pool. The account selected by the project owner was assigned to that group; sign out and back in to see the new navigation item.
+
+Validation: all 13 local tests pass; the credential-pattern scan and whitespace checks pass. CloudFormation reports successful update, CloudFront invalidation is complete, the live app JavaScript matches the source, and API health returns `{ "ok": true }`. Group assignment was verified through AWS. Browser rendering could not be verified because browser control was unavailable and computer-use permissions were disabled.
+
+The optional `scripts/smoke-admin.mjs` production test requires explicit approval to create, promote, change access for, and delete disposable accounts. Local tests cover those authorization rules without changing real accounts. Existing reader ID tokens can remain valid for up to one hour after an account is disabled; new sign-ins are blocked. Administrator group removal is checked live on every admin request.

@@ -176,6 +176,12 @@ Resources:
         RecoveryMechanisms:
           - Name: verified_email
             Priority: 1
+  AdministratorsGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: administrators
+      Description: Margin account administrators
+      UserPoolId: !Ref UserPool
   UserPoolClient:
     Type: AWS::Cognito::UserPoolClient
     Properties:
@@ -241,6 +247,9 @@ Resources:
             - Effect: Allow
               Action: [dynamodb:GetItem, dynamodb:PutItem, dynamodb:DeleteItem, dynamodb:Query]
               Resource: !GetAtt LibraryTable.Arn
+            - Effect: Allow
+              Action: [cognito-idp:ListUsers, cognito-idp:AdminGetUser, cognito-idp:AdminListGroupsForUser, cognito-idp:AdminEnableUser, cognito-idp:AdminDisableUser]
+              Resource: !GetAtt UserPool.Arn
             - Effect: Allow
               Action: [s3:GetObject, s3:PutObject]
               Resource: !Sub '${CoversBucket.Arn}/covers/*'

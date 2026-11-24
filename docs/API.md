@@ -52,3 +52,11 @@ Stats response includes `total`, `finished`, `reading`, `averageRating` (null if
 `GET /api/catalog?q=<search>` is authenticated and returns up to eight `{title, author, sourceUrl}` results from Open Library. Search terms must be 2–120 characters; upstream failures return 502. Users review the selected title/author in the Add a book form and save through the normal book endpoint. No private notes or tokens are sent upstream. Provider reference: https://openlibrary.org/dev/docs/api/search.
 
 Highlights on `to-read` books return 409: first start/pause/finish reading, then capture passages. Planning notes remain allowed. Moving a book to `reading` or `finished` automatically clears `nextUp`. Foreign/missing book and entry IDs return 404 to conceal existence; an out-of-owner/book cover key returns 403. These rules are enforced on the server.
+
+## Administration
+
+- `GET /api/me`: returns `role` (`reader` or `admin`).
+- `GET /api/admin/users?cursor=...`: administrators only; returns `users` (username, email, enabled, status, createdAt) and `nextToken`. Pages contain up to 20 accounts.
+- `PUT /api/admin/users/:username/access` with `{ "enabled": true/false }`: changes reader sign-in access. Self-modification and disabling administrators return 409. Reader or revoked-admin access returns 403.
+
+Roles come from verified Cognito group claims with live enabled-state and group checks. The Lambda IAM policy permits only account listing, live checks and enabling/disabling within this pool. Admins cannot read another reader’s library. Disabling blocks new sign-ins; existing application ID tokens can remain usable for up to one hour. Local development exposes a read-only account preview.

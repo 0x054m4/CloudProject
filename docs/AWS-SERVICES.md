@@ -108,7 +108,7 @@ Passwords are handled by Cognito, not stored in DynamoDB or sent to the Express 
 
 After login, the frontend keeps the ID token, refresh token and session metadata in `sessionStorage`. Private API requests send `Authorization: Bearer <ID token>`. API Gateway applies its Cognito authorizer, and Express independently verifies the JWT signature, issuer, expiry, token type and app client using `aws-jwt-verify`.
 
-The verified token's `sub` identifies the reader and determines the DynamoDB partition. The application does not trust a user-supplied owner ID. Signing out clears this tab's stored session; it does not perform global token revocation. There is no administrator role or Cognito Identity Pool in this implementation.
+The verified token's `sub` identifies the reader and determines the DynamoDB partition. The application does not trust a user-supplied owner ID. Signing out clears this tab's stored session; it does not perform global token revocation. The `administrators` Cognito group grants access to account management; the backend checks live membership and enabled state before admin operations. No Cognito Identity Pool is used.
 
 **Code:** `cognito()`, `saveSession()`, `api()` and the authentication form in [frontend/app.js](../frontend/app.js); `CognitoJwtVerifier` and authentication middleware in [backend/src/app.js](../backend/src/app.js).
 
@@ -158,7 +158,7 @@ Supporting modules include [domain.js](../backend/src/domain.js) for validation 
 
 Monthly counts use completion dates on finished books. Genre averages use rated books only. Next-up contains pinned to-read or paused books. **The current next-up feature is a rule-based shortlist, not an AI recommendation engine.**
 
-Lambda receives `TABLE_NAME`, `USER_POOL_ID`, `CLIENT_ID`, `COVERS_BUCKET`, `FRONTEND_ORIGIN` and `LOCAL_DEV=false` as environment configuration. Its IAM execution role grants access to the application table and the cover bucket's `covers/*` prefix; backend credentials are not embedded in source code.
+Lambda receives `TABLE_NAME`, `USER_POOL_ID`, `CLIENT_ID`, `COVERS_BUCKET`, `FRONTEND_ORIGIN` and `LOCAL_DEV=false` as environment configuration. Its IAM execution role grants access to the application table, the cover bucket's `covers/*` prefix, and scoped Cognito account-listing, group-check and enable/disable operations; backend credentials are not embedded in source code.
 
 ## 7. Amazon DynamoDB — persistent application data
 
@@ -218,7 +218,7 @@ These support the six requested AWS services; they are not separate student busi
 
 Open Library receives explicit search terms, not private notes or Cognito tokens. Search has query limits, a six-second timeout and a small five-minute per-process cache. If it fails, the API returns an actionable error and manual book entry remains available.
 
-**Not currently configured for this app:** a Cloudflare custom domain, a custom ACM certificate, Route 53, EC2 servers, relational databases, separate Lambda functions per module, or an admin-role workflow. The API retains its `execute-api` domain.
+**Not currently configured for this app:** a Cloudflare custom domain, a custom ACM certificate, Route 53, EC2 servers, relational databases, separate Lambda functions per module, or an identity-pool workflow. The API retains its `execute-api` domain.
 
 ## 10. Local mode and verification evidence
 

@@ -4,7 +4,7 @@
 
 Margin serves individual readers who lose track of books, passages and future reading choices across unrelated notes and lists. One private library connects book progress, reading notes and completion statistics. Readers can find real bibliographic details, record their own reflections, understand their reading habits and share only a deliberate shortlist.
 
-In scope: one reader account, private books/journal, catalog-assisted entry, status/completion workflow, ratings, statistics, shortlist and revocable public sharing. Out of scope: book lending, purchases, full-text ebooks, social moderation, administrative access to readers' private libraries and native mobile applications.
+In scope: one reader account, private books/journal, catalog-assisted entry, status/completion workflow, ratings, statistics, shortlist and revocable public sharing. Out of scope: book lending, purchases, full-text ebooks, social moderation, access to readers' private libraries and native mobile applications.
 
 The agreed architecture uses **business-service modules**, not independently deployed microservices. One Express app runs locally or in one Lambda, with a shared Cognito identity, native frontend, navigation and database. AWS infrastructure services are not presented as student-owned business services.
 
@@ -24,7 +24,7 @@ Rules are enforced in backend services. The UI is a convenience and can be bypas
 - **Unauthenticated visitor:** health endpoint and an explicitly shared shortlist only. Private requests return 401.
 - **Authenticated reader:** own books, notes, highlights, covers and share configuration only. Identity is taken from a verified Cognito ID token, never a submitted owner field.
 - **Public-link viewer:** only title, author, genre and reading status of eligible pinned books. No account, private note, rating or cover access.
-- There is no admin role in this project's requirements. Do not claim role-based administrator functionality. If the full brief separately requires multiple authenticated roles, add that requirement before submission.
+- **Administrator:** members of the Cognito `administrators` group can list account metadata and enable or disable reader sign-in. Private library access remains scoped to the signed-in reader. Group membership and account enabled state are checked live for admin requests; reader and revoked-admin tokens receive 403. Self-disable and disabling another administrator are blocked. Role assignment is an AWS operator action.
 
 Unknown and foreign record IDs deliberately return the same **404** to avoid revealing another reader's records. An attempt to attach a cover outside the current user's/book's prefix returns **403**. Invalid/missing, expired, wrong-client, wrong-issuer and forged tokens return **401**. Returning 404 for foreign IDs is intentional ownership protection, not absent authorization.
 
@@ -51,4 +51,4 @@ No project Git repository existed when this audit began, so there was no project
 
 ## Remaining boundaries
 
-See THREAT-MODEL.md for concrete threats and remaining controls. Concurrent writes are last-write-wins; book/entry deletion is not transactional. Catalog cache is per-process, not a global rate limiter. A public shortlist link is a bearer capability and can be forwarded. Current requirements do not establish a need for multiple deployment units or administrator roles; do not describe either as implemented.
+See THREAT-MODEL.md for concrete threats and remaining controls. Concurrent writes are last-write-wins; book/entry deletion is not transactional. Catalog cache is per-process, not a global rate limiter. A public shortlist link is a bearer capability and can be forwarded. Business modules share one deployment. Administrator account management is implemented with a separate authenticated role.

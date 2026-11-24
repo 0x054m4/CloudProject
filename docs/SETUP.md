@@ -25,7 +25,7 @@ aws sts get-caller-identity
 sam --version
 ```
 
-Your deployment identity needs permissions to create CloudFormation stacks, IAM roles, S3 buckets/policies, CloudFront distributions/policies, Cognito pools/clients, API Gateway REST APIs, Lambda functions, DynamoDB tables and CloudWatch log groups. Use an approved deployment role. The runtime role in the template is restricted to this table and cover objects. Do not put AWS credentials in frontend config.
+Your deployment identity needs permissions to create CloudFormation stacks, IAM roles, S3 buckets/policies, CloudFront distributions/policies, Cognito pools/clients, API Gateway REST APIs, Lambda functions, DynamoDB tables and CloudWatch log groups. Use an approved deployment role. The runtime role is restricted to this table, cover objects and the pool’s account-listing, group-check and enable/disable operations. Do not put AWS credentials in frontend config.
 
 ## 3. Create the AWS services and database
 
@@ -134,3 +134,15 @@ AWS_PROFILE=margin .aws-sam/verify-env/bin/python scripts/smoke-aws.py margin us
 This test creates two temporary Cognito identities with notifications suppressed, keeps credentials in memory, exercises the API and private cover uploads, and removes its test data afterward. It needs Cognito administrative permissions for its temporary users and S3 delete permission for its temporary cover. No real users are modified. It does not verify email delivery or browser rendering.
 
 For cleanup, also remove the `margin-artifacts` CloudFormation stack. Its S3 bucket is retained; empty and delete that bucket separately when the packaged versions are no longer needed.
+
+## Administrator access
+
+Deployment creates the Cognito group `administrators`. An AWS operator assigns an existing account with:
+
+```sh
+AWS_PROFILE=margin aws cognito-idp admin-add-user-to-group --region us-east-1 --user-pool-id us-east-1_xbV2ShYbQ --username YOUR_ACCOUNT_EMAIL --group-name administrators
+```
+
+Sign out and back in to receive the new group claim, then choose **Administration** in the navigation. Group removal blocks admin operations immediately. Account enable/disable controls do not expose private reading records. Manage administrator group membership through AWS; no public signup path grants admin privileges.
+
+Run `AWS_PROFILE=margin node scripts/smoke-admin.mjs` after deployment to verify reader denial, admin listing, enable/disable, self-protection and role revocation using temporary accounts. It suppresses emails and deletes those accounts afterward.
