@@ -213,7 +213,7 @@ These support the six requested AWS services; they are not separate student busi
 | --- | --- | --- |
 | AWS CloudFormation / SAM transform | Creates and updates infrastructure from templates | [template.yaml](../template.yaml), [artifacts.yaml](../infrastructure/artifacts.yaml), [deploy-backend.sh](../scripts/deploy-backend.sh) |
 | AWS IAM | Lambda execution role, scoped DynamoDB/S3 permissions, and AWS deployment permissions | `ApiFunction.Policies` in [template.yaml](../template.yaml) |
-| Amazon CloudWatch Logs | Lambda execution logs and sanitized application failure diagnostics; log-group retention is 14 days | `ApiLogGroup` in [template.yaml](../template.yaml); [app.js](../backend/src/app.js), [catalog.js](../backend/src/services/catalog.js) |
+| Amazon CloudWatch | Lambda logs with 14-day retention, API Gateway `4XXError` stage metric dashboard, and a saved Logs Insights query | `ApiLogGroup`, `OperationsDashboard` and `LambdaRecentEventsQuery` in [template.yaml](../template.yaml); [monitoring guide](CLOUDWATCH.md) |
 | Open Library (external, not AWS) | Searches real title/author metadata; a selected result populates the add-book form for review and saving | [catalog.js](../backend/src/services/catalog.js), `/api/catalog`, catalog controls in [frontend/app.js](../frontend/app.js) |
 
 Open Library receives explicit search terms, not private notes or Cognito tokens. Search has query limits, a six-second timeout and a small five-minute per-process cache. If it fails, the API returns an actionable error and manual book entry remains available.

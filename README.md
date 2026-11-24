@@ -61,3 +61,5 @@ Read [requirements and evidence](docs/REQUIREMENTS.md), [application threat mode
 ## Custom account emails
 
 Optional branded Amazon SES sending is prepared but not enabled. See [SES setup and current status](docs/SES-EMAIL.md).
+
+CloudWatch monitoring includes the Lambda log group, an API Gateway 4XXError dashboard and a saved Logs Insights query. See [CloudWatch operations](docs/CLOUDWATCH.md) for usage and verification.

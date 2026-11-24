@@ -51,3 +51,11 @@ Deployed the Administration view, `/api/me`, account listing and enable/disable 
 Validation: all 13 local tests pass; the credential-pattern scan and whitespace checks pass. CloudFormation reports successful update, CloudFront invalidation is complete, the live app JavaScript matches the source, and API health returns `{ "ok": true }`. Group assignment was verified through AWS. Browser rendering could not be verified because browser control was unavailable and computer-use permissions were disabled.
 
 The optional `scripts/smoke-admin.mjs` production test requires explicit approval to create, promote, change access for, and delete disposable accounts. Local tests cover those authorization rules without changing real accounts. Existing reader ID tokens can remain valid for up to one hour after an account is disabled; new sign-ins are blocked. Administrator group removal is checked live on every admin request.
+
+## CloudWatch update — 24 November 2026
+
+Deployed CloudWatch resources to the existing `margin` stack in `us-east-1`. The `margin-operations-us-east-1` dashboard shows the API Gateway `4XXError` metric (`ApiName=margin`, `Stage=prod`, five-minute `Sum`) and recent Lambda events. The saved Logs Insights query is `margin/lambda-recent-events`. The existing Lambda log group retains events for 14 days and is retained on stack deletion or replacement. The API name, ID, URL and stage are preserved.
+
+Live verification using `scripts/check-cloudwatch.py` confirmed retention, dashboard metric dimensions, query scope and successful query execution: four metric datapoints and 55 log rows in the preceding 24 hours. Counts reflect the verification time. CloudFormation reported `UPDATE_COMPLETE`; API health returned `{ "ok": true }`. No accounts or application data were changed by verification.
+
+See [CloudWatch operations](CLOUDWATCH.md) for console access and repeatable checks. Dashboard: https://us-east-1.console.aws.amazon.com/cloudwatch/home?region=us-east-1#dashboards/dashboard/margin-operations-us-east-1

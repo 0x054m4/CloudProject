@@ -197,6 +197,7 @@ Resources:
   Api:
     Type: AWS::Serverless::Api
     Properties:
+      Name: !Ref AWS::StackName
       StageName: prod
       EndpointConfiguration: REGIONAL
       Cors:
@@ -276,9 +277,85 @@ Resources:
             Auth: {Authorizer: NONE}
   ApiLogGroup:
     Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       LogGroupName: !Sub '/aws/lambda/${ApiFunction}'
       RetentionInDays: 14
+  LambdaRecentEventsQuery:
+    Type: AWS::Logs::QueryDefinition
+    Properties:
+      Name: !Sub '${AWS::StackName}/lambda-recent-events'
+      LogGroupNames:
+        - !Ref ApiLogGroup
+      QueryString: |
+        fields @timestamp, @requestId, @message, @logStream
+        | sort @timestamp desc
+        | limit 100
+  OperationsDashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: !Sub '${AWS::StackName}-operations-${AWS::Region}'
+      DashboardBody: !Sub |
+        {
+          "start": "-PT3H",
+          "periodOverride": "inherit",
+          "widgets": [
+            {
+              "type": "text",
+              "x": 0,
+              "y": 0,
+              "width": 24,
+              "height": 3,
+              "properties": {
+                "markdown": "# Margin operations\nLambda log group: `${ApiLogGroup}` (14-day retention). Saved query: `${AWS::StackName}/lambda-recent-events`.\n\nThe API Gateway chart counts client errors, including authentication failures that never invoke Lambda. Use the log query for Lambda invocations and application diagnostics."
+              }
+            },
+            {
+              "type": "metric",
+              "x": 0,
+              "y": 3,
+              "width": 24,
+              "height": 6,
+              "properties": {
+                "title": "API Gateway 4XXError \u2014 prod (count per 5 minutes)",
+                "region": "${AWS::Region}",
+                "view": "timeSeries",
+                "stat": "Sum",
+                "period": 300,
+                "metrics": [
+                  [
+                    "AWS/ApiGateway",
+                    "4XXError",
+                    "ApiName",
+                    "${AWS::StackName}",
+                    "Stage",
+                    "prod"
+                  ]
+                ],
+                "yAxis": {
+                  "left": {
+                    "min": 0
+                  }
+                },
+                "liveData": false
+              }
+            },
+            {
+              "type": "log",
+              "x": 0,
+              "y": 9,
+              "width": 24,
+              "height": 7,
+              "properties": {
+                "title": "Recent Lambda log events",
+                "region": "${AWS::Region}",
+                "view": "table",
+                "query": "SOURCE '${ApiLogGroup}'\n| fields @timestamp, @requestId, @message, @logStream\n| sort @timestamp desc\n| limit 100"
+              }
+            }
+          ]
+        }
 Outputs:
   WebsiteUrl:
     Value: !Sub 'https://${Distribution.DomainName}'
@@ -296,3 +373,14 @@ Outputs:
     Value: !Ref CoversBucket
   TableName:
     Value: !Ref LibraryTable
+  LambdaLogGroupName:
+    Value: !Ref ApiLogGroup
+  LambdaLogsQueryId:
+    Value: !Ref LambdaRecentEventsQuery
+  CloudWatchDashboardName:
+    Value: !Ref OperationsDashboard
+  CloudWatchDashboardUrl:
+    Value: !Sub 'https://${AWS::Region}.console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#dashboards/dashboard/${OperationsDashboard}'
+  ApiMetricName:
+    Description: API name used by the CloudWatch ApiName dimension.
+    Value: !Ref AWS::StackName
